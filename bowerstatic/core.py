@@ -101,6 +101,13 @@ class ComponentCollection(object):
             result[component.name] = component
         return result
 
+    def _files_in_location(self, path):
+        paths = []
+        for top, subdirs, files in os.walk(path):
+            for name in files:
+                paths.append(os.path.join(top, name)[len(path)+1:])
+        return paths
+
     def load_component(self, path, bower_filename, version=None,
                        autoversion=False):
         bower_json_filename = os.path.join(path, bower_filename)
@@ -112,6 +119,8 @@ class ComponentCollection(object):
             main = data['main']
         else:
             main = [data['main']]
+        if main == []:
+            main = self.bower.filter_by_known_ext(self._files_in_location(path))
         dependencies = data.get('dependencies')
         if dependencies is None:
             dependencies = {}
